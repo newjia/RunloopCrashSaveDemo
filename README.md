@@ -42,9 +42,9 @@
        [self keyWindow].rootViewController = navi;
    ```
 
-   ### 最后
+### 最后
 
-   Have Fun！最好还是要彻底检查崩溃来源
+Have Fun！最好还是要彻底检查崩溃来源
 
 ![](saveme.jpeg)
 
