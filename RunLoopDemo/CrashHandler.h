@@ -13,7 +13,11 @@
     BOOL ignore;
 }
 
+// 单例
 + (instancetype)sharedInstance;
+
+// 设置捕获到崩溃回调自定义的方法
+- (void)crash: (void(^)(void))callback;
 
 @end
 

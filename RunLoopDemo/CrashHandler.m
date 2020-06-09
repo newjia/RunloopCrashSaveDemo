@@ -19,7 +19,13 @@ NSString * const kCaughtExceptionStackInfoKey = @"kCaughtExceptionStackInfoKey";
 
 void HandleException(NSException *exception);
 void SignalHandler(int signal);
+typedef void(^crashCall)(void);
 
+@interface CrashHandler ()
+
+@property (copy, nonatomic) crashCall callback;
+
+@end 
 @implementation CrashHandler
 
 static CrashHandler *instance = nil;
@@ -51,6 +57,10 @@ static CrashHandler *instance = nil;
     return self;
 }
 
+- (void)crash: (void(^)(void))callback{
+    self.callback = callback;
+}
+
 - (void)setCatchExceptionHandler
 {
     // 1.捕获一些异常导致的崩溃
@@ -80,18 +90,7 @@ static CrashHandler *instance = nil;
     return backtrace;
 }
 
-- (void)showFriendlyTips{
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"☀️" message:@"亲爱的小朋友，你的App 发生了神秘故障，需要重新修复" preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *skipAction = [UIAlertAction actionWithTitle:@"👌👌" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-            [self resetApp];
-    }];
-    [alertController addAction:skipAction];
 
-    UINavigationController *navi = [self getRootVC];
-    [navi presentViewController:alertController animated:YES completion:nil];
-
-    
-}
  
 /**
     捕获异常。
@@ -107,9 +106,9 @@ static CrashHandler *instance = nil;
     // 可以将上述的崩溃文件，上传至服务器供分析
     
     
-    
-    [self showFriendlyTips];
-    
+    // 回调
+    self.callback();
+        
     CFRunLoopRef runLoop = CFRunLoopGetCurrent();
     CFArrayRef allModes = CFRunLoopCopyAllModes(runLoop);
     
@@ -136,39 +135,6 @@ static CrashHandler *instance = nil;
     }
 }
 
-// 重置App 的根控制器
-- (void)resetApp{
-    NSLog(@"起死回生");
-
-    UIStoryboard *storyBoard = [UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]];
-    UINavigationController *navi = [storyBoard instantiateInitialViewController];
-    
-    [self keyWindow].rootViewController = navi;
-}
-// 获取根window
-- (UIWindow *)keyWindow{
-    UIWindow *window = nil;
-    
-    if (@available(iOS 13.0, *))
-    {
-        for (UIWindowScene* windowScene in [UIApplication sharedApplication].connectedScenes)
-        {
-            if (windowScene.activationState == UISceneActivationStateForegroundActive)
-            {
-                window = windowScene.windows.firstObject;
-                break;
-            }
-        }
-    }else{
-        window = [UIApplication sharedApplication].keyWindow;
-    }
-    return window;
-}
-
-// 获取根控制器
-- (UINavigationController *)getRootVC{
-    return (UINavigationController *)[self keyWindow].rootViewController;
-}
 @end
 
 void HandleException(NSException *exception)
