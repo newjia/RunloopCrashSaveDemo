@@ -42,6 +42,25 @@
        [self keyWindow].rootViewController = navi;
    ```
 
+5. PS. 你甚至可以在`handleException` 方法中，根据获取的崩溃文件，上传到服务器，供后续自行分析方法调用堆栈，创建你自己的异常分析系统。
+
+   具体代码为：
+
+   ```objective-c
+   - (void)handleException:(NSException *)exception
+   {
+       NSString *message = [NSString stringWithFormat:@"崩溃原因如下:\n%@\n%@",
+                            [exception reason],
+                            [[exception userInfo] objectForKey:kCaughtExceptionStackInfoKey]];
+       NSLog(@"%@",message);
+   		// 可以将上述的崩溃文件，上传至服务器供分析    
+   }
+   ```
+
+   打印信息如下：
+
+   ![](crash.png)
+
 ### 最后
 
 Have Fun！最好还是要彻底检查崩溃来源
